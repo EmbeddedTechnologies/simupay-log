@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
+
+android {
+    namespace 'com.etl.simupaylog'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 26
+        targetSdk 34
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId    = 'com.github.EmbeddedTechnologies'
+                artifactId = 'simupay-log'
+                version    = '1.0.0'
+            }
+        }
+    }
+}
