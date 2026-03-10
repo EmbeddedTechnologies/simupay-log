@@ -1,7 +1,14 @@
 package com.etl.simupaylog;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
+import android.view.PixelCopy;
+import android.view.View;
+import android.view.Window;
 
 import org.json.JSONObject;
 
@@ -175,6 +182,53 @@ public final class Log {
         img(tag, "", bitmap);
     }
 
+    // ── Screenshot logging ──────────────────────────────────────────────────
+
+    /**
+     * Capture a screenshot of the given Activity and send it to the SimuPay
+     * dashboard. Uses {@link PixelCopy} (API 26+) for hardware-accelerated
+     * capture with a fallback to {@link View#draw(Canvas)} for software rendering.
+     *
+     * <p>Must be called from the <strong>UI thread</strong> or with a valid
+     * Activity whose window is visible.</p>
+     *
+     * @param tag      log tag
+     * @param message  caption shown alongside the screenshot in the dashboard
+     * @param activity the activity to capture; must not be null or finishing
+     */
+    public static void screen(String tag, String message, Activity activity) {
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            post("W", tag, "[screen — activity unavailable]");
+            return;
+        }
+        android.util.Log.i(tag, message != null ? message : "[screenshot]");
+        captureScreen(tag, message != null ? message : "", activity);
+    }
+
+    /** Overload with no caption message. */
+    public static void screen(String tag, Activity activity) {
+        screen(tag, "", activity);
+    }
+
+    /**
+     * Capture a screenshot of a specific View and send it to the dashboard.
+     *
+     * @param tag     log tag
+     * @param message caption
+     * @param view    the view to capture
+     */
+    public static void screen(String tag, String message, View view) {
+        if (view == null || view.getWidth() == 0 || view.getHeight() == 0) {
+            post("W", tag, "[screen — view unavailable or zero-sized]");
+            return;
+        }
+        android.util.Log.i(tag, message != null ? message : "[screenshot]");
+        Bitmap bmp = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        view.draw(canvas);
+        postImage(tag, message != null ? message : "", bmp);
+    }
+
     public static String getStackTraceString(Throwable tr) {
         return android.util.Log.getStackTraceString(tr);
     }
@@ -184,6 +238,48 @@ public final class Log {
     }
 
     // ── Internal ────────────────────────────────────────────────────────────
+
+    private static void captureScreen(String tag, String message, Activity activity) {
+        Window window = activity.getWindow();
+        View decorView = window.getDecorView();
+        int w = decorView.getWidth();
+        int h = decorView.getHeight();
+        if (w == 0 || h == 0) {
+            post("W", tag, "[screen — window has zero size]");
+            return;
+        }
+
+        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+
+        try {
+            // PixelCopy works with hardware-accelerated windows (API 26+)
+            Handler handler = new Handler(Looper.getMainLooper());
+            PixelCopy.request(window, bmp, (result) -> {
+                if (result == PixelCopy.SUCCESS) {
+                    postImage(tag, message, bmp);
+                } else {
+                    // Fallback to canvas draw
+                    android.util.Log.w(SELF_TAG, "PixelCopy failed (code " + result + "), falling back to canvas draw");
+                    fallbackCapture(tag, message, decorView, bmp);
+                }
+            }, handler);
+        } catch (Exception e) {
+            // PixelCopy unavailable or failed — fallback
+            android.util.Log.w(SELF_TAG, "PixelCopy exception, falling back to canvas draw: " + e.getMessage());
+            fallbackCapture(tag, message, decorView, bmp);
+        }
+    }
+
+    private static void fallbackCapture(String tag, String message, View view, Bitmap bmp) {
+        try {
+            Canvas canvas = new Canvas(bmp);
+            view.draw(canvas);
+            postImage(tag, message, bmp);
+        } catch (Exception e) {
+            android.util.Log.e(SELF_TAG, "Screenshot fallback failed: " + e.getMessage());
+            post("E", tag, "[screen — capture failed: " + e.getMessage() + "]");
+        }
+    }
 
     private static void postImage(String tag, String message, Bitmap bitmap) {
         final String url = sSimulatorUrl;
