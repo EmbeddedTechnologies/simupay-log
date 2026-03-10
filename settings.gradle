@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "simupay-log"
 include ':lib'
+include ':plugin'

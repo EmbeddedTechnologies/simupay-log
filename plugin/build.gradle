@@ -1,0 +1,34 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    compileOnly 'com.android.tools.build:gradle:8.5.0'
+    compileOnly 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+}
+
+gradlePlugin {
+    plugins {
+        simupayLog {
+            id = 'com.etl.simupay-log'
+            implementationClass = 'com.etl.simupaylog.plugin.SimuPayLogPlugin'
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            pluginMaven(MavenPublication) {
+                groupId    = 'com.github.EmbeddedTechnologies.simupay-log'
+                artifactId = 'plugin'
+            }
+        }
+    }
+}

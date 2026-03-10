@@ -29,9 +29,9 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId    = 'com.github.EmbeddedTechnologies'
-                artifactId = 'simupay-log'
-                version    = '1.0.0'
+                groupId    = 'com.github.EmbeddedTechnologies.simupay-log'
+                artifactId = 'lib'
+                version    = '1.2.0'
             }
         }
     }
