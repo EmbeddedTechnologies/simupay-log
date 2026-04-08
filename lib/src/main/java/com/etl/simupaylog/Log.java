@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
  * <h3>Configuration</h3>
  * Call once at app startup (e.g. in {@code Application.onCreate}):
  * <pre>
- *   Log.setSimulatorUrl("https://sim.embeddedc.co.uk/api/log");
+ *   Log.setSimulatorUrl("https://simupay.co.uk/api/log");
  *   Log.setTerminalId(myTid);   // included in every log entry for dashboard filtering
  * </pre>
  * Set URL to {@code null} (the default) to disable remote forwarding.
@@ -45,7 +45,7 @@ public final class Log {
     private static final String SELF_TAG = "SimuLog";
 
     /** URL of the simulator POST /api/log endpoint. Null = remote forwarding disabled. */
-    private static volatile String sSimulatorUrl = "https://sim.embeddedc.co.uk/api/log";
+    private static volatile String sSimulatorUrl = "https://simupay.co.uk/api/log";
 
     /** Terminal ID appended to every remote log entry. */
     private static volatile String sTerminalId = null;
@@ -65,7 +65,7 @@ public final class Log {
     /**
      * Set the SimuPay log endpoint URL.
      *
-     * @param url full URL e.g. {@code "https://sim.embeddedc.co.uk/api/log"},
+     * @param url full URL e.g. {@code "https://simupay.co.uk/api/log"},
      *            or {@code null} to disable remote forwarding.
      */
     public static void setSimulatorUrl(String url) {

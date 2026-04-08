@@ -1,7 +1,7 @@
 # simupay-log
 
 Drop-in replacement for `android.util.Log` that forwards log entries to the
-[SimuPay](https://sim.embeddedc.co.uk) dashboard in real time.
+[SimuPay](https://simupay.co.uk) dashboard in real time.
 
 ## Setup
 
@@ -52,7 +52,7 @@ changes or source modifications required.
 ```java
 import com.etl.simupaylog.Log;
 
-Log.setSimulatorUrl("https://sim.embeddedc.co.uk/api/log");
+Log.setSimulatorUrl("https://simupay.co.uk/api/log");
 Log.setTerminalId("12345678");  // your 8-digit terminal ID
 ```
 
